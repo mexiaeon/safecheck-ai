@@ -49,7 +49,7 @@
     }
     const brand = /\b(irs|social security administration|ssa|amazon|paypal|coinbase|microsoft|apple|netflix|fedex|ups|usps|chase|bank of america|your bank|bank security|fraud department)\b/i;
     const suspiciousBrandAction = has(/\b(?:verify|suspend|locked|refund|sign in|log ?in|security alert|payment failed|delivery fee|click|link|urgent|confirm your|account restricted|account blocked)\b/i);
-    if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length)) {
+    if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length || (refundLanguage && refundAction))) {
       add("impersonation",30,"Possible company or agency impersonation","The message combines a recognizable organization with a sensitive request, threat, payment, or link. A company name can be copied; contact the organization through its official app or website.");
     }
     const hasUrl = extractUrls(t).length > 0;
