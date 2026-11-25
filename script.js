@@ -7,6 +7,8 @@
   const result = document.getElementById("result");
   const analyzeButton = document.getElementById("analyze");
   let mode = "message";
+  // Set this to the deployed Worker base URL to enable live checks.
+  const LIVE_CHECK_ENDPOINT = "";
 
   const modes = {
     message: ["Paste the suspicious text message", "Remove passwords, account numbers, and private information first.", "Example: Your account will be suspended. Verify your details now..."],
@@ -116,10 +118,31 @@
   }));
   input.addEventListener("input",()=>{count.textContent=input.value.length+" / 2,000";});
   document.getElementById("year").textContent=new Date().getFullYear();
-  analyzeButton.addEventListener("click",()=>{
+  async function runLiveUrlCheck(rawUrl) {
+    if (!LIVE_CHECK_ENDPOINT) return;
+    const status = $("p","engine-note","Checking this URL against Google Web Risk…");
+    result.append(status);
+    try {
+      const response = await fetch(LIVE_CHECK_ENDPOINT.replace(/\/$/,"") + "/check", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({url:rawUrl})
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Live lookup unavailable");
+      status.remove();
+      const panel = $("div", data.matched ? "live-result live-match" : "live-result live-clear");
+      panel.append($("b","",data.matched ? "Live threat database match" : "No match in the live threat database"));
+      panel.append($("p","",data.matched ? "Google Web Risk currently lists this URL as a known unsafe resource. Do not visit it or enter information." : "Google Web Risk did not find this URL on the threat lists checked. This is not proof that the site is safe."));
+      result.append(panel);
+    } catch (error) {
+      status.textContent = "Live lookup unavailable: " + (error.message || "Please try again later.") + ". Local pattern analysis is still shown.";
+    }
+  }
+  analyzeButton.addEventListener("click",async()=>{
     const value=input.value.trim();
     if(!value){input.focus();return;}
-    if(value.length>2000){return;}
+    if(value.length>2000)return;
     renderReport(analyze(value,mode));
+    if(mode==="url") await runLiveUrlCheck(value);
+    else { const urls=extractUrls(value); if(urls.length) await runLiveUrlCheck(urls[0]); }
   });
 })();
