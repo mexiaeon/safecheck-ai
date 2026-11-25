@@ -52,6 +52,9 @@
     if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length || (refundLanguage && refundAction) || (has(/\bpayment failed\b/i) && has(/\b(?:sign in|log ?in|update your payment|confirm your payment)\b/i)))) {
       add("impersonation",30,"Possible company or agency impersonation","The message combines a recognizable organization with a sensitive request, threat, payment, or link. A company name can be copied; contact the organization through its official app or website.");
     }
+    if (brand.test(t) && has(/\bpayment failed\b/i) && has(/\b(?:sign in|log ?in|update your payment|confirm your payment)\b/i)) {
+      add("payment-phishing",55,"Payment problem used to steal account access","A claimed payment failure combined with a sign-in or payment-update request may be a phishing attempt. Open the official app yourself instead of following message instructions.");
+    }
     const hasUrl = extractUrls(t).length > 0;
     const linkCallToAction = has(/\b(?:click|tap|open|follow|visit|use)\b.{0,35}\b(?:this |the )?(?:link|url|button)\b|\b(?:sign in|log ?in|verify|claim|update|confirm)\b.{0,45}\b(?:here|using (?:this |the )?link|through (?:this |the )?link)\b/i);
     if (hasUrl && linkCallToAction && (urgency || refundLanguage || asksCredential || asksPersonal || asksMoney || (brand.test(t) && suspiciousBrandAction))) {
