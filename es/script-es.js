@@ -8,7 +8,10 @@ email:["Pega el texto del correo (sin datos privados)","Nunca incluyas contrase�
 url:["Pega la dirección del sitio web","No abras el enlace. Pega únicamente la dirección como texto.","https://ejemplo.com/pagina"]
 };
 const $=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!==undefined)e.textContent=txt;return e};
-function urls(s){return [...new Set((s.match(/(?:https?:\/\/|www\.)[^\s<>"'\])}]+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<>"'\])}]+)?/gi)||[]).map(x=>x.replace(/[.,!?;:]+$/,""))].slice(0,10)}
+function urls(text) {
+    const pattern = /(?:https?:\/\/|www\.)[^\s<>"'\])}]+|\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s<>"'\])}]+)?/gi;
+    return [...new Set((text.match(pattern) || []).map(x => x.replace(/[.,!?;:]+$/,"")))].slice(0,10);
+  }
 function analyzeMessage(s){
 const t=s.toLowerCase(),f=[],add=(id,p,title,detail)=>{if(!f.some(x=>x.id===id))f.push({id,points:p,title,detail})},has=r=>r.test(t);
 if(has(/\b(contraseña|contrasena|password|nip|pin|c[oó]digo de (?:verificaci[oó]n|seguridad|acceso)|c[oó]digo otp)\b/)&&has(/\b(env[ií]a|env[ií]es|manda|mandes|comparte|compartas|proporciona|proporciones|ingresa|ingreses|escribe|escribas|confirma|confirmes|responde con|dame|facilita)\b/)&&!has(/\b(no compartas|nunca compartas|jam[aá]s compartas|no env[ií]es|nunca env[ií]es|no proporciones|nunca proporciones|no reveles|nunca reveles|no ingreses|nunca ingreses)\b/))
