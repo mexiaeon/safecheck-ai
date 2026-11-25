@@ -78,7 +78,10 @@ const ol=$("ol","action-list");actions.forEach(a=>ol.append($("li","",a)));next.
 result.hidden=false;result.scrollIntoView({behavior:"smooth",block:"start"});
 }
 document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.mode;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));label.textContent=modes[mode][0];hint.textContent=modes[mode][1];input.placeholder=modes[mode][2];input.value="";count.textContent="0 / 2,000";result.hidden=true;result.replaceChildren()}));
-input.addEventListener("input",()=>count.textContent=input.value.length+" / 2,000");
+const updateCount=()=>{count.textContent=input.value.length+" / 2,000"};
+input.addEventListener("input",updateCount);
+input.addEventListener("change",updateCount);
+input.addEventListener("paste",()=>setTimeout(updateCount,0));
 document.getElementById("year").textContent=new Date().getFullYear();
-button.addEventListener("click",()=>{const v=input.value.trim();if(!v){input.focus();return}if(v.length>2000)return;render(report(v,mode))});
+button.addEventListener("click",()=>{const v=input.value.trim();updateCount();if(!v){input.focus();return}if(v.length>2000)return;render(report(v,mode))});
 })();
