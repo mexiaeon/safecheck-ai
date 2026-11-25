@@ -54,3 +54,9 @@
   .action-list li{line-height:1.75;padding:6px 0}
   .engine-note{line-height:1.6}
 }
+
+/* Language switch */
+.language-switch{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-size:11px;font-weight:800;letter-spacing:.04em;color:#dce7f3}
+.language-switch a{color:#91a9c2;text-decoration:none;padding:5px 7px;border:1px solid #2a4059;border-radius:6px}
+.language-switch a:hover{color:#fff;border-color:#62adff}
+@media(max-width:740px){.language-switch{font-size:10px;gap:5px}.language-switch a{padding:5px 6px}}
