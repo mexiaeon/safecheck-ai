@@ -30,4 +30,12 @@ The Worker keeps the Google API key server-side. It does not visit submitted web
 - Review Google Web Risk terms, branding/attribution, retention, and commercial-use requirements before monetizing.
 
 ## Current status
-The front-end integration and Worker source are prepared, but live lookup stays disabled until you deploy the Worker, set its secret, and configure `LIVE_CHECK_ENDPOINT`.
+
+The repository contains the Worker source and the website is configured to call the Worker URL. The Worker now also responds to a simple health check:
+
+- Open the Worker base URL in a browser. A healthy deployment returns JSON with `ok: true`.
+- `liveLookupConfigured: false` means the Worker is running but the Google Web Risk secret has not been added.
+- `liveLookupConfigured: true` means the secret exists; it does not by itself prove the Google API key is valid.
+- A real live lookup requires a POST request to `/check`, a valid `WEBRISK_API_KEY` secret, and Web Risk API access.
+
+The GitHub source being updated does not by itself prove that Cloudflare has deployed that revision. After a new commit, confirm the latest deployment in Cloudflare before treating the live checker as active.
