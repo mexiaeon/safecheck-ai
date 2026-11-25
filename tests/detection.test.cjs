@@ -38,7 +38,7 @@ const spanishCases = [
   ["WhatsApp code theft", "Hola, soy del soporte de WhatsApp. Necesitamos confirmar tu identidad. Envíanos el código de seis dígitos que acabas de recibir para mantener activa tu cuenta.", "high", "whatsapp"],
   ["Fake delivery fee", "Estafeta: No pudimos entregar tu paquete debido a una dirección incorrecta. Actualiza tus datos y paga $19 para programar una nueva entrega.", "high", "entrega-mx"],
   ["Task job deposit", "¡Tenemos vacantes disponibles! Gana entre $1,500 y $4,000 diarios dando likes a videos. Solo necesitas WhatsApp. Deposita $200 para activar tu cuenta y comenzar a retirar ganancias.", "high", "empleo-mx"],
-  ["Fake Mercado Pago refund", "Mercado Pago: Tu cuenta tiene una operación pendiente. Para recibir tu dinero, confirma tu identidad e inicia sesión nuevamente.", "high", "suplantacion"],
+  ["Fake Mercado Pago refund", "Mercado Pago: Tu reembolso está pendiente. Para recibirlo, confirma tu identidad e inicia sesión en https://mercadopago-login.example para liberar tu dinero.", "high", "banco-mx"],
   ["Private investment group", "Estamos aceptando nuevos participantes en nuestro grupo privado de inversiones. Puedes comenzar con $500 y recibir rendimientos diarios. Escríbenos por Telegram para conocer los detalles.", "high", "inversion-mensajeria"],
   ["Incomplete bank update", "Hola, tu solicitud de actualización bancaria quedó incompleta. Para continuar, ingresa desde el portal que te compartimos anteriormente.", "medium", "actualizacion-bancaria"],
   ["Legitimate BBVA safety warning", "BBVA te recuerda que nunca debes compartir tu NIP, contraseña ni códigos de seguridad. Si recibes llamadas sospechosas, cuelga y comunícate directamente con el banco.", "low", null],
