@@ -94,11 +94,30 @@ if(!actions.length)actions.push("Si el mensaje no lo esperabas, verifica quién 
 const ol=$("ol","action-list");actions.forEach(a=>ol.append($("li","",a)));next.append(ol);result.append(next,$("p","engine-note","SafeCheck AI utiliza análisis local de patrones. Las consultas de reputación de enlaces en tiempo real no están habilitadas. Si tienes dudas, verifica por un canal confiable."));
 result.hidden=false;result.scrollIntoView({behavior:"smooth",block:"start"});
 }
-document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.mode;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));label.textContent=modes[mode][0];hint.textContent=modes[mode][1];input.placeholder=modes[mode][2];input.value="";count.textContent="0 / 2,000";result.hidden=true;result.replaceChildren()}));
-const updateCount=()=>{count.textContent=input.value.length+" / 2,000"};
+document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click",()=>{mode=b.dataset.mode;document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t===b));label.textContent=modes[mode][0];hint.textContent=modes[mode][1];input.placeholder=modes[mode][2];input.value="";count.textContent="0 / 10,000";result.hidden=true;result.replaceChildren()}));
+const updateCount=()=>{count.textContent=input.value.length+" / 10,000"};
 input.addEventListener("input",updateCount);
 input.addEventListener("change",updateCount);
 input.addEventListener("paste",()=>setTimeout(updateCount,0));
 document.getElementById("year").textContent=new Date().getFullYear();
-button.addEventListener("click",()=>{const v=input.value.trim();updateCount();if(!v){input.focus();return}if(v.length>2000)return;render(report(v,mode))});
+
+const screenshotInput=document.getElementById("screenshot-file"),ocrStatus=document.getElementById("ocr-status");
+if(screenshotInput)screenshotInput.addEventListener("change",async()=>{
+ const file=screenshotInput.files&&screenshotInput.files[0];if(!file)return;
+ if(!["image/png","image/jpeg","image/webp"].includes(file.type)){ocrStatus.textContent="Elige una imagen PNG, JPG o WebP.";screenshotInput.value="";return}
+ if(file.size>8*1024*1024){ocrStatus.textContent="La imagen supera 8 MB. Elige una captura más pequeña.";screenshotInput.value="";return}
+ if(!window.Tesseract){ocrStatus.textContent="No se pudo cargar el reconocimiento de texto. Puedes pegar el correo o mensaje manualmente.";return}
+ ocrStatus.textContent="Leyendo el texto de la captura en tu navegador…";
+ try{
+  const result=await window.Tesseract.recognize(file,"eng+spa",{logger:m=>{if(m.status==="recognizing text")ocrStatus.textContent="Leyendo la captura… "+Math.round((m.progress||0)*100)+"%"}});
+  const extracted=(result.data.text||"").trim();
+  if(!extracted){ocrStatus.textContent="No encontramos texto legible. Prueba con una captura más clara o pega el texto.";return}
+  mode="message";document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode==="message"));
+  label.textContent=modes.message[0];hint.textContent=modes.message[1];input.placeholder=modes.message[2];
+  input.value=extracted.slice(0,10000);updateCount();ocrStatus.textContent="Texto extraído. Revísalo, elimina datos privados y pulsa Analizar.";
+  result.hidden=true;result.replaceChildren();input.focus();
+ }catch(e){ocrStatus.textContent="No pudimos leer esta imagen. Prueba con una captura PNG o JPG más clara, o pega el texto."}
+ finally{screenshotInput.value=""}
+});
+button.addEventListener("click",()=>{const v=input.value.trim();updateCount();if(!v){input.focus();return}if(v.length>10000)return;render(report(v,mode))});
 })();
