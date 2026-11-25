@@ -90,26 +90,79 @@
     return {score,level,findings:unique};
   }
 
+  function getRecommendedActions(report) {
+    const ids = new Set(report.findings.map(f => f.id));
+    const actions = [];
+    if (ids.has("credential") || ids.has("personal") || ids.has("sensitive-path") || [...ids].some(id => id.startsWith("brand-lookalike-"))) {
+      actions.push("Do not enter a password, one-time code, identity number, or payment detail. Open the service's official app or type its known address yourself.");
+    }
+    if (ids.has("payment") || ids.has("advance-fee") || ids.has("irreversible") || ids.has("fake-refund")) {
+      actions.push("Do not pay or send money using the message's instructions. Contact your bank or payment provider using the number on your card or its official app if you already paid.");
+    }
+    if (ids.has("job")) actions.push("Do not pay to get hired, unlock tasks, or withdraw supposed earnings. Verify the employer using contact details found independently.");
+    if (ids.has("romance")) actions.push("Do not send money, gift cards, cryptocurrency, or travel funds to someone you have only met online. Verify their story independently.");
+    if (ids.has("remote")) actions.push("Do not install remote-access software or share your screen with an unexpected caller or sender.");
+    if (ids.has("prize")) actions.push("Do not pay a fee or provide financial details to claim an unexpected prize. Check the promotion through the organizer's official website.");
+    if (ids.has("account-threat") || ids.has("impersonation")) actions.push("Check the claimed account, delivery, or agency notice through its official app or website—not through the message.");
+    if (ids.has("linkprompt") || ids.has("shortener") || ids.has("punycode") || ids.has("brand-lookalike") || ids.has("ip-host") || ids.has("embedded-credentials")) {
+      actions.push("Do not open the link. If you need the service, navigate to its official website yourself.");
+    }
+    if (!actions.length) actions.push("If this message was unexpected, verify the sender through a separate trusted channel before replying, clicking, or sharing information.");
+    return [...new Set(actions)];
+  }
+
   function renderReport(report) {
     result.replaceChildren();
-    const titles={high:"High concern — stop and verify",medium:"Caution — review before acting",low:"No strong warning pattern found"};
+    const titles={high:"High concern",medium:"Caution",low:"No strong warning pattern found"};
     const intros={
-      high:"Several strong warning signals were detected. Do not click, reply, pay, or share information until you verify independently.",
-      medium:"Some warning signals were detected. Pause and verify the sender and request through a trusted channel.",
-      low:"This engine found few warning signals in the content provided. That is not proof the message or website is legitimate."
+      high:"This message or address contains multiple warning signs. Treat it as suspicious until you verify it independently.",
+      medium:"This check found warning signs worth reviewing. Pause before clicking, replying, paying, or sharing information.",
+      low:"This check found few recognizable warning signs. Scams can still look convincing, so a low score does not establish that something is safe."
     };
-    result.className="result risk-"+report.level;
     const header=$("div","report-header");
-    header.append($("div","risk-label",titles[report.level]),$("div","score","Signal score: "+report.score+"/100"));
+    header.append($("div","risk-label",titles[report.level]),$("div","score","Warning score: "+report.score+"/100"));
+    result.className="result risk-"+report.level;
     result.append(header,$("p","report-intro",intros[report.level]));
+
+    const meter=$("div","score-meter");
+    meter.setAttribute("role","meter");
+    meter.setAttribute("aria-label","Warning score");
+    meter.setAttribute("aria-valuemin","0");
+    meter.setAttribute("aria-valuemax","100");
+    meter.setAttribute("aria-valuenow",String(report.score));
+    const fill=$("div","score-meter-fill score-"+report.level);
+    fill.style.width=report.score+"%";
+    meter.append(fill);
+    result.append(meter);
+
+    const meaning=$("p","score-meaning",
+      report.level==="high" ? "High: several or stronger warning patterns were found." :
+      report.level==="medium" ? "Caution: at least one meaningful warning pattern was found." :
+      "Low: few warning patterns matched. This is not a safety certification."
+    );
+    result.append(meaning,$("p","score-caveat","This is a pattern-based warning score—not a probability that the message is a scam and not a live reputation verdict."));
+
+    const section=$("div","result-section");
+    section.append($("h3","","What we noticed ("+report.findings.length+" "+(report.findings.length===1?"signal":"signals")+")"));
     if(report.findings.length) {
       const list=$("ul","finding-list");
-      report.findings.forEach(f=>{const li=$("li");li.append($("b","",f.title),$("p","",f.detail));list.append(li);});
-      result.append(list);
-    } else result.append($("p","","No matching warning patterns were identified. Sophisticated scams may not contain obvious keywords."));
+      report.findings.forEach(f=>{
+        const li=$("li","");
+        li.append($("b","",f.title),$("p","",f.detail));
+        list.append(li);
+      });
+      section.append(list);
+    } else {
+      section.append($("p","no-findings","No matching warning patterns were identified in the text you provided."));
+    }
+    result.append(section);
+
     const next=$("div","next-step");
-    next.append($("b","","What to do next"),$("p","","Do not use links or phone numbers in the message. Open the company’s official app or type its known website address yourself. For money already sent, contact your bank or payment provider immediately."));
-    result.append(next,$("p","engine-note","Local pattern analysis only. Live URL reputation checks are not currently enabled. A low score never means safe."));
+    next.append($("h3","","Recommended next steps"));
+    const actions=$("ol","action-list");
+    getRecommendedActions(report).forEach(action=>actions.append($("li","",action)));
+    next.append(actions);
+    result.append(next,$("p","engine-note","SafeCheck AI uses local pattern analysis. Live URL reputation checks are not enabled. When in doubt, verify through a trusted channel."));
     result.hidden=false;
     result.scrollIntoView({behavior:"smooth",block:"nearest"});
   }
