@@ -164,7 +164,7 @@
     next.append(actions);
     result.append(next,$("p","engine-note","SafeCheck AI uses local pattern analysis. Live URL reputation checks are not enabled. When in doubt, verify through a trusted channel."));
     result.hidden=false;
-    result.scrollIntoView({behavior:"smooth",block:"nearest"});
+    result.scrollIntoView({behavior:"smooth",block:"start"});
   }
 
   document.querySelectorAll(".tab").forEach(button=>button.addEventListener("click",()=>{
