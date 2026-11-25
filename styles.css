@@ -22,3 +22,23 @@
 
 /* Keep the hero preview perfectly straight on every screen size. */
 .scan{transform:none!important}
+
+
+/* Clearer risk report: score scale, explanation, and actionable steps. */
+.score-meter{height:8px;background:#26384d;border-radius:99px;overflow:hidden;margin:12px 0 6px}
+.score-meter-fill{height:100%;border-radius:99px;transition:width .25s ease}
+.score-high{background:#ff858c}.score-medium{background:#f0bd69}.score-low{background:#75bde8}
+.score-meaning{font-size:11px!important;font-weight:700;color:#dce8f5!important;margin:4px 0}
+.score-caveat{font-size:10px!important;color:#91a5ba!important;margin:4px 0 15px}
+.result-section{border-top:1px solid #34465b;padding-top:13px;margin-top:12px}
+.result-section h3,.next-step h3{font-size:12px;margin:0 0 8px;color:#f0f5fb}
+.finding-list{margin:0;padding-left:20px}
+.finding-list li{padding:8px 0 9px 2px}
+.finding-list li b{font-size:11px;color:#f0f5fb}
+.finding-list li p{font-size:10px;line-height:1.6;margin:4px 0 0;color:#b2c2d3}
+.no-findings{font-size:11px!important;color:#b2c2d3!important}
+.next-step{margin-top:15px;padding:14px;background:#102943;border:1px solid #294b6a;border-radius:9px}
+.next-step h3{color:#9bd0ff}
+.action-list{padding-left:20px;margin:6px 0 0}
+.action-list li{font-size:11px;line-height:1.65;color:#d3dfec;padding:4px 0}
+@media(max-width:520px){.report-header{align-items:flex-start}.score{font-size:10px}.result{padding:14px}.score-caveat{line-height:1.55}}
