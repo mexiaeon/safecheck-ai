@@ -37,7 +37,7 @@
   const $ = (tag, cls, text) => { const el=document.createElement(tag); if(cls) el.className=cls; if(text!==undefined) el.textContent=text; return el; };
 
   function extractUrls(text) {
-    return [...new Set((text.match(/(?:https?:\/\/|www\.)[^\s<>"'\])}]+|\b[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(?:\/[^\s<>"'\])}]*)?/gi)||[]).map(x=>x.replace(/[.,!?;:]+$/,""))].slice(0,10);
+    return [...new Set((text.match(/(?:https?:\/\/|www\.)[^\s<>"'\])}]+|\b[a-z0-9][a-z0-9.-]*\.[a-z]{2,}(?:\/[^\s<>"'\])}]*)?/gi)||[]).map(x=>x.replace(/[.,!?;:]+$/,""))) ].slice(0,10);
   }
   function inspectUrl(raw) {
     const findings=[];
