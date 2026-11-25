@@ -72,6 +72,33 @@ for (const [name, message, shouldWarn] of englishCases) {
   });
 }
 
+
+const spanishEmailCases = [
+  ["fake SAT email", "SAT: Tu devolución está retenida. Confirma tu e.firma y datos bancarios en el enlace para liberar el pago.", true],
+  ["fake package invoice", "DHL: Tu paquete está retenido. Paga $35 de aduana hoy para evitar la devolución. Actualiza tus datos en este enlace.", true],
+  ["legitimate bank advice email", "BBVA nunca te pedirá tu contraseña ni tu NIP por correo. No abras enlaces sospechosos y consulta la app oficial.", false],
+  ["ordinary purchase confirmation", "Gracias por tu compra. Tu pedido fue confirmado y puedes consultar el envío desde la aplicación oficial.", false]
+];
+for (const [name, email, shouldWarn] of spanishEmailCases) {
+  test("ES email: " + name, () => {
+    const result = es.report(email, "email");
+    assert.equal(result.score >= 25, shouldWarn, "score=" + result.score + "; findings=" + result.f.map(x => x.id).join(","));
+  });
+}
+
+const englishEmailCases = [
+  ["fake payroll update", "Payroll: Your direct deposit will be paused. Sign in through this link and confirm your bank account details immediately.", true],
+  ["fake invoice attachment", "Your invoice is overdue. Pay the processing fee today using this payment link to avoid account closure.", true],
+  ["legitimate security reminder", "Reminder: We will never ask for your password or one-time code by email. Visit our official app if you need help.", false],
+  ["normal order receipt", "Thank you for your order. Your receipt is attached for your records. You can view order status in the official app.", false]
+];
+for (const [name, email, shouldWarn] of englishEmailCases) {
+  test("EN email: " + name, () => {
+    const result = en.analyze(email, "email");
+    assert.equal(result.score >= 25, shouldWarn, "score=" + result.score + "; findings=" + result.findings.map(x => x.id).join(","));
+  });
+}
+
 test("URL: flags a lookalike brand domain", () => {
   const findings = es.inspectUrl("https://paypal.com.example.test/login");
   assert.ok(findings.length > 0);
