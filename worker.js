@@ -1,6 +1,6 @@
 const ALLOWED_ORIGINS = new Set(["https://mexiaeon.github.io","http://localhost:8000","http://127.0.0.1:8000"]);
 function cors(origin) {
-  const h={"Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"86400","Vary":"Origin"};
+  const h={"Access-Control-Allow-Methods":"GET, POST, OPTIONS","Access-Control-Allow-Headers":"Content-Type","Access-Control-Max-Age":"86400","Vary":"Origin"};
   if(ALLOWED_ORIGINS.has(origin)) h["Access-Control-Allow-Origin"]=origin;
   return h;
 }
@@ -17,6 +17,9 @@ export default {
     if(request.method==="OPTIONS") return ALLOWED_ORIGINS.has(origin)?new Response(null,{status:204,headers:cors(origin)}):new Response(null,{status:403});
     if(origin&&!ALLOWED_ORIGINS.has(origin)) return reply({error:"Origin not allowed"},403,origin);
     const path=new URL(request.url).pathname;
+    if(request.method==="GET"&&(path==="/"||path==="/health")) {
+      return reply({ok:true,service:"SafeCheck AI URL checker",liveLookupConfigured:Boolean(env.WEBRISK_API_KEY)},200,origin);
+    }
     if(path!=="/check"||request.method!=="POST") return reply({error:"Not found"},404,origin);
     if(!env.WEBRISK_API_KEY) return reply({error:"Server is not configured"},503,origin);
     let body; try { body=await request.json(); } catch { return reply({error:"Invalid JSON"},400,origin); }
