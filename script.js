@@ -25,7 +25,7 @@
     };
     const has = re => re.test(t);
     const credential = /\b(password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b/i;
-    const asksCredential = has(/\b(?:what(?:'s|s| is) your|tell (?:me|us) your|send (?:me|us)|share|reply with|provide|enter|submit|confirm|give (?:me|us)|type in|text me)\b.{0,85}\b(?:password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b/i) ||
+    const asksCredential = has(/\b(?:what(?:'s|s| is) your|tell (?:me|us) your|send (?:me|us)|share|reply with|provide|enter(?:ing)?|submit|confirm|give (?:me|us)|type in|text me)\b.{0,85}\b(?:password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b/i) ||
       has(/\b(?:password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b.{0,65}\b(?:send|share|reply with|provide|enter|submit|confirm|tell|give)\b/i);
     const protective = has(/\b(?:never|do not|don't|dont)\s+(?:share|send|provide|give|reply with|tell anyone)\b.{0,55}\b(?:password|passcode|code|pin|login)\b/i) ||
       has(/\b(?:never|do not|don't|dont)\s+(?:ask for|request)\b.{0,35}\b(?:password|passcode|verification code|otp)\b/i);
@@ -49,12 +49,12 @@
     }
     const brand = /\b(irs|social security administration|ssa|amazon|paypal|coinbase|microsoft|apple|netflix|fedex|ups|usps|chase|bank of america|your bank|bank security|fraud department)\b/i;
     const suspiciousBrandAction = has(/\b(?:verify|suspend|locked|refund|sign in|log ?in|security alert|payment failed|delivery fee|click|link|urgent|confirm your|account restricted|account blocked)\b/i);
-    if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length || (refundLanguage && refundAction))) {
+    if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length || (refundLanguage && refundAction) || (has(/\bpayment failed\b/i) && has(/\b(?:sign in|log ?in|update your payment|confirm your payment)\b/i)))) {
       add("impersonation",30,"Possible company or agency impersonation","The message combines a recognizable organization with a sensitive request, threat, payment, or link. A company name can be copied; contact the organization through its official app or website.");
     }
     const hasUrl = extractUrls(t).length > 0;
     const linkCallToAction = has(/\b(?:click|tap|open|follow|visit|use)\b.{0,35}\b(?:this |the )?(?:link|url|button)\b|\b(?:sign in|log ?in|verify|claim|update|confirm)\b.{0,45}\b(?:here|using (?:this |the )?link|through (?:this |the )?link)\b/i);
-    if (hasUrl && linkCallToAction && (urgency || suspiciousBrandAction || refundLanguage || asksCredential || asksPersonal || asksMoney)) {
+    if (hasUrl && linkCallToAction && (urgency || refundLanguage || asksCredential || asksPersonal || asksMoney || (brand.test(t) && suspiciousBrandAction))) {
       add("linkprompt",38,"Link combined with a suspicious request","The message pairs a link with a request to sign in, verify an account, claim a refund, or pay. Do not use the message link; navigate to the official site yourself.");
     } else if (hasUrl && linkCallToAction) {
       add("linkprompt",12,"Message asks you to open a link","An unexpected link deserves a check, but this wording alone does not prove the message is malicious. Inspect the destination independently.");
@@ -62,7 +62,7 @@
     if (has(/\b(?:anydesk|teamviewer|remote access|screen sharing|share your screen|allow me to control|install.{0,30}remote support)\b/i)) {
       add("remote",70,"Remote access or device-control request","An unexpected request to install remote-access software or share device control is a serious warning sign.");
     }
-    if (has(/\b(?:task job|pay to start|deposit to withdraw|unlock (?:your )?(?:earnings|tasks)|product boosting|optimization tasks|reshipping|package forwarding|application fee|registration fee|training fee)\b/i)) {
+    if (has(/\b(?:task job|task earnings|pay to start|deposit to withdraw|unlock (?:your )?(?:earnings|tasks)|unlock.{0,35}(?:task )?earnings|product boosting|optimization tasks|reshipping|package forwarding|application fee|registration fee|training fee)\b/i)) {
       add("job",55,"Unusual job or task offer","Legitimate employers generally do not require you to pay to get hired or unlock wages. Verify the employer independently.");
     }
     if (has(/\b(?:send me money|send you money|medical bill|emergency funds|flight ticket|travel costs|invest together|gift cards? for me)\b/i)) {
