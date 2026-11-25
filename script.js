@@ -16,23 +16,61 @@
     url: ["Paste the website address", "Do not open the link. Paste the address as text only.", "https://example.com/page"]
   };
 
-  const rules = [
-    { id:"urgency", points:18, title:"Urgency or threat", detail:"The message pressures you to act immediately or threatens a negative consequence.", re:/\b(urgent(?:ly)?|immediately|act now|final warning|within\s*\d+\s*hours?|account.{0,30}(?:suspend|suspension|close|closure|lock|terminat)|suspend(?:ed|sion)?|limited time|last chance|avoid (?:a )?penalty|avoid (?:account )?(?:suspension|closure))\b/i },
-    { id:"credential", points:55, title:"Password or verification-code request", detail:"The message asks for a password, one-time code, PIN, or login details. Never share these in response to an unexpected message—even if the sender claims to represent a familiar company.", re:/\b(?:send|share|reply with|provide|enter|submit|confirm|tell (?:me|us)|give (?:me|us)|what(?:'s|s| is) your|what is the)\b.{0,65}\b(password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b|\b(password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b.{0,55}\b(?:send|share|reply with|provide|enter|submit|confirm|tell (?:me|us)|give (?:me|us))\b/i },
-    { id:"personal", points:18, title:"Sensitive personal information request", detail:"The message appears to ask you to provide sensitive identity or financial information. Verify the request through an official channel.", re:/\b(?:send|share|reply with|provide|enter|submit|confirm|upload|give us)\b.{0,55}\b(social security(?: number)?|\bssn\b|date of birth|driver\x27?s license|bank account number|routing number|credit card details|full card number|tax id|taxpayer id)\b|\b(social security(?: number)?|\bssn\b|date of birth|driver\x27?s license|bank account number|routing number|credit card details|full card number|tax id|taxpayer id)\b.{0,55}\b(?:send|share|provide|enter|submit|upload)\b/i },
-    { id:"payment", points:22, title:"Unexpected payment or fee", detail:"The message appears to request money to resolve a problem or complete a transaction. Verify unexpected payment requests independently.", re:/\b(pay (?:a |the )?(?:small |processing |release |delivery |customs )?fee|small fee|payment required|processing fee|release fee|delivery fee|customs fee|wire transfer|bank transfer|send (?:the )?money|pay(?:ment)? outstanding|pay immediately|pay now|overdue invoice|past due balance|reconfirm payment|payment failed|pay.{0,30}(?:fine|penalty|tax|balance))\b/i },
-    { id:"account-threat", points:20, title:"Account or delivery threat", detail:"A claim that an account or delivery will be blocked can pressure you into acting before checking independently.", re:/\b(package|parcel|delivery|account|subscription|payment)\b.{0,55}\b(on hold|held|suspended|suspension|locked|temporarily locked|disabled|restricted|blocked|failed|will be returned|will be cancelled|will be closed)\b|\b(on hold|held|suspended|blocked)\b.{0,55}\b(package|parcel|delivery|account|subscription)\b/i },
-    { id:"fake-refund", points:22, title:"Unexpected refund or payment reversal", detail:"Unexpected refund or payment-reversal messages that ask you to claim money, verify details, or follow a link can be used to steal money or account information.", re:/\b(?:refund.{0,35}(?:pending|claim|verify|release|failed|available|waiting)|(?:claim|collect|receive|release|verify).{0,35}refund|overpaid you|overpayment|payment reversed|refund.{0,25}(?:link|account|details|information))\b/i },
-    { id:"advance-fee", points:24, title:"Upfront fee to receive money or a benefit", detail:"Being asked to pay first to receive a prize, job earnings, a loan, or a package is a common scam pattern.", re:/\b(pay|send|deposit)\b.{0,45}\b(to receive|to release|to unlock|to claim|before you can withdraw)\b|\b(release|unlock|claim)\b.{0,35}\b(funds|earnings|prize|package|loan)\b/i },
-    { id:"irreversible", points:28, title:"Request for hard-to-reverse payment", detail:"The message appears to request payment through gift cards, cryptocurrency, wire transfer, or a payment app. These payments can be difficult to recover.", re:/\b(?:pay|send|transfer|deposit|purchase|buy)\b.{0,55}\b(gift cards?|itunes cards?|google play cards?|steam cards?|bitcoin|crypto(?:currency)?|usdt|ethereum|wire transfer|western union|moneygram|cash app|zelle|venmo)\b|\b(gift cards?|itunes cards?|google play cards?|steam cards?|bitcoin|crypto(?:currency)?|usdt|ethereum|wire transfer|western union|moneygram|cash app|zelle|venmo)\b.{0,55}\b(?:payment|pay|send|transfer|deposit|purchase|buy)\b/i },
-    { id:"prize", points:18, title:"Unexpected prize or reward", detail:"An unexpected prize or reward can be used to lure people into paying fees or sharing information. Verify it independently before responding.", re:/\b(you (?:have )?won|congratulations.{0,35}(?:winner|won|prize)|claim your (?:prize|reward)|free money|lottery winner|sweepstakes winner|guaranteed (?:profit|return)|risk[- ]free investment)\b/i },
-    { id:"remote", points:25, title:"Remote-access or device-control request", detail:"A stranger asking you to install remote-access software, share your screen, or give device control is a serious warning sign.", re:/\b(anydesk|teamviewer|remote access|screen sharing|share your screen|give (?:me|us) (?:remote )?access to your (?:computer|phone|device)|allow (?:me|us) to control your (?:computer|phone|device)|install.{0,35}(?:anydesk|teamviewer|remote support))\b/i },
-    { id:"impersonation", points:20, title:"Possible brand or agency impersonation", detail:"A familiar organization is mentioned alongside a suspicious request or account warning. Scammers can copy real company names; verify through the official app or website you open yourself.", re:/(?:(?:irs|social security administration|ssa|amazon|paypal|coinbase|microsoft|apple support|netflix|fedex|ups|usps|bank security|fraud department|police department).{0,85}(?:verify|suspend|locked|refund|sign in|login|security|delivery fee|click|link|urgent))|(?:(?:verify|suspend|locked|refund|sign in|login|security|delivery fee|click|link|urgent).{0,85}(?:irs|social security administration|ssa|amazon|paypal|microsoft|apple support|netflix|fedex|ups|usps|bank security|fraud department|police department))/i },
-    { id:"linkprompt", points:16, title:"Possible phishing link or sign-in prompt", detail:"The message encourages you to use a link to sign in, claim a refund, verify an account, or update payment details. This is a common phishing technique; open the official app or type the known website address yourself.", re:/\b(click here|tap (?:this|the) link|open (?:this|the) link|follow this link|verify (?:your )?(?:account|identity|details)|sign in (?:here|now)|use the link(?: below)?|visit (?:this|the) link|click (?:the )?link|view (?:the )?(?:message|invoice|document|refund)|claim (?:your )?refund|update (?:your )?(?:payment|account)|confirm (?:your )?(?:details|information|password)|reset your password)\b/i },
-    { id:"secrecy", points:20, title:"Secrecy or isolation pressure", detail:"Requests to keep a transaction secret or avoid speaking to others are a major warning sign.", re:/\b(keep (?:this )?secret|don't tell anyone|do not tell anyone|秘密|stay on the line|do not hang up|don't contact your bank|do not contact your bank)\b/i },
-    { id:"job", points:26, title:"Unusual job or task offer", detail:"Paying money to get hired, unlock tasks, receive commissions, or withdraw earnings is a common job and task-scam pattern.", re:/\b(task (?:job|work)|pay to start|deposit to withdraw|unlock (?:your )?(?:earnings|tasks)|commission (?:tasks|job)|product boosting|optimization tasks|reshipping|package forwarding|pay (?:an )?(?:application|registration|training|equipment) fee|job offer.{0,45}(?:deposit|fee|payment)|earnings.{0,35}(?:deposit|fee|unlock)|withdraw.{0,35}(?:deposit|fee))\b/i },
-    { id:"romance", points:26, title:"Emotional or relationship-based money request", detail:"An online romantic contact asking for money, travel costs, medical bills, emergency help, investments, or gift cards deserves independent verification.", re:/\b(send me money|send (?:you )?money|help me with (?:a )?(?:ticket|medical bill|emergency|rent|bills)|medical bill|emergency funds|emergency ticket|flight ticket|travel (?:costs|expenses)|let\x27s invest together|invest together|need gift cards|gift cards? for (?:me|my)|invest(?:ment)? opportunity.{0,35}(?:together|send|transfer))\b/i },
-  ];
+  // Context-aware detection: identify requests and combinations, not isolated brand keywords.
+  function detectMessage(text) {
+    const t = text.toLowerCase().replace(/\s+/g," ").trim();
+    const findings = [];
+    const add = (id, severity, title, detail) => {
+      if (!findings.some(f => f.id === id)) findings.push({id, points:severity, title, detail});
+    };
+    const has = re => re.test(t);
+    const credential = /\b(password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b/i;
+    const asksCredential = has(/\b(?:what(?:'s|s| is) your|tell (?:me|us) your|send (?:me|us)|share|reply with|provide|enter|submit|confirm|give (?:me|us)|type in|text me)\b.{0,85}\b(?:password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b/i) ||
+      has(/\b(?:password|passcode|one[- ]time (?:pass)?code|verification code|security code|2fa code|otp|pin number|login credentials)\b.{0,65}\b(?:send|share|reply with|provide|enter|submit|confirm|tell|give)\b/i);
+    const protective = has(/\b(?:never|do not|don't|dont)\s+(?:share|send|provide|give|reply with|tell anyone)\b.{0,55}\b(?:password|passcode|code|pin|login)\b/i) ||
+      has(/\b(?:never|do not|don't|dont)\s+(?:ask for|request)\b.{0,35}\b(?:password|passcode|verification code|otp)\b/i);
+    if (asksCredential && !protective) add("credential",85,"Direct request for a password or security code","A message asking you to reveal a password, one-time code, PIN, or login details is a critical warning sign. Legitimate support staff should not ask you to send these secrets in a message.");
+    const asksPersonal = has(/\b(?:send|share|provide|enter|submit|upload|confirm|give us)\b.{0,55}\b(?:social security number|ssn|date of birth|driver'?s license|bank account number|routing number|full card number|tax id|taxpayer id)\b/i);
+    if (asksPersonal) add("personal",65,"Request for sensitive personal information","The message asks you to send identity or financial details. Verify the request through a trusted official channel.");
+    const urgency = has(/\b(?:urgent(?:ly)?|immediately|act now|final warning|within\s*\d+\s*hours?|last chance|avoid (?:a )?penalty|account.{0,25}(?:suspend|lock|close|terminat)|will be (?:suspended|closed|blocked))\b/i);
+    if (urgency) add("urgency",15,"Pressure to act quickly","The message creates urgency or threatens a consequence. Scammers use pressure to stop people checking independently.");
+    const asksMoney = has(/\b(?:pay|send|transfer|wire|deposit|purchase|buy|settle)\b.{0,65}\b(?:fee|money|payment|funds|gift cards?|bitcoin|crypto(?:currency)?|usdt|ethereum|wire transfer|western union|moneygram|cash app|zelle|venmo|tax|fine|penalty|delivery|customs|processing)\b/i) ||
+      has(/\b(?:fee|payment|funds|gift cards?|bitcoin|crypto(?:currency)?|wire transfer|western union|moneygram|cash app|zelle|venmo)\b.{0,65}\b(?:pay|send|transfer|wire|deposit|purchase|buy)\b/i);
+    if (asksMoney) add("payment",42,"Request to send money or pay a fee","The message appears to ask you to pay or transfer money. Verify the request independently before paying.");
+    const hardToReverse = has(/\b(?:gift cards?|itunes cards?|google play cards?|steam cards?|bitcoin|crypto(?:currency)?|usdt|ethereum|western union|moneygram|wire transfer)\b/i) &&
+      has(/\b(?:pay|send|transfer|deposit|purchase|buy|payment)\b/i);
+    if (hardToReverse) add("irreversible",68,"Hard-to-reverse payment method","Gift cards, cryptocurrency, and wire transfers are difficult to recover. An unexpected request to pay this way is a serious warning sign.");
+    const refundLanguage = has(/\b(?:refund|reimbursement|payment reversal|chargeback)\b/i);
+    const refundAction = has(/\b(?:claim|collect|receive|release|verify|confirm|unlock|process|click|open|visit|sign in|log ?in|update|provide|enter)\b/i);
+    const refundMoney = has(/\b(?:fee|payment|card|bank|account|details|information|link|url|password|verification)\b/i);
+    const refundAlreadyProcessed = has(/\b(?:refund has been processed|refund was processed|refund is complete|refund completed|will be credited|credited to your original payment method)\b/i);
+    if (refundLanguage && !refundAlreadyProcessed && (refundAction || refundMoney) && (asksMoney || extractUrls(t).length || has(/\b(?:verify|confirm|update|provide|enter|sign in|log ?in|claim)\b/i))) {
+      add("fake-refund",48,"Refund message asks you to take action","Unexpected refund claims that ask you to follow a link, sign in, provide details, or pay a fee can be used to steal money or account access.");
+    }
+    const brand = /\b(irs|social security administration|ssa|amazon|paypal|coinbase|microsoft|apple|netflix|fedex|ups|usps|chase|bank of america|your bank|bank security|fraud department)\b/i;
+    const suspiciousBrandAction = has(/\b(?:verify|suspend|locked|refund|sign in|log ?in|security alert|payment failed|delivery fee|click|link|urgent|confirm your|account restricted|account blocked)\b/i);
+    if (brand.test(t) && suspiciousBrandAction && (urgency || asksCredential || asksPersonal || asksMoney || extractUrls(t).length)) {
+      add("impersonation",30,"Possible company or agency impersonation","The message combines a recognizable organization with a sensitive request, threat, payment, or link. A company name can be copied; contact the organization through its official app or website.");
+    }
+    const hasUrl = extractUrls(t).length > 0;
+    const linkCallToAction = has(/\b(?:click|tap|open|follow|visit|use)\b.{0,35}\b(?:this |the )?(?:link|url|button)\b|\b(?:sign in|log ?in|verify|claim|update|confirm)\b.{0,45}\b(?:here|using (?:this |the )?link|through (?:this |the )?link)\b/i);
+    if (hasUrl && linkCallToAction && (urgency || suspiciousBrandAction || refundLanguage || asksCredential || asksPersonal || asksMoney)) {
+      add("linkprompt",38,"Link combined with a suspicious request","The message pairs a link with a request to sign in, verify an account, claim a refund, or pay. Do not use the message link; navigate to the official site yourself.");
+    } else if (hasUrl && linkCallToAction) {
+      add("linkprompt",12,"Message asks you to open a link","An unexpected link deserves a check, but this wording alone does not prove the message is malicious. Inspect the destination independently.");
+    }
+    if (has(/\b(?:anydesk|teamviewer|remote access|screen sharing|share your screen|allow me to control|install.{0,30}remote support)\b/i)) {
+      add("remote",70,"Remote access or device-control request","An unexpected request to install remote-access software or share device control is a serious warning sign.");
+    }
+    if (has(/\b(?:task job|pay to start|deposit to withdraw|unlock (?:your )?(?:earnings|tasks)|product boosting|optimization tasks|reshipping|package forwarding|application fee|registration fee|training fee)\b/i)) {
+      add("job",55,"Unusual job or task offer","Legitimate employers generally do not require you to pay to get hired or unlock wages. Verify the employer independently.");
+    }
+    if (has(/\b(?:send me money|send you money|medical bill|emergency funds|flight ticket|travel costs|invest together|gift cards? for me)\b/i)) {
+      add("romance",45,"Personal relationship used to request money","A request for money, travel costs, gift cards, or investments from an online-only contact deserves independent verification.");
+    }
+    if (urgency && asksMoney && !findings.some(f=>f.id==="payment")) add("payment",42,"Urgent payment request","The message combines pressure with a request for money. Verify through a separate trusted channel.");
+    return findings;
+  }
 
   const brandDomains = {
     paypal:["paypal.com"], amazon:["amazon.com"], apple:["apple.com"], microsoft:["microsoft.com"], google:["google.com"], netflix:["netflix.com"], usps:["usps.com"], fedex:["fedex.com"], ups:["ups.com"], chase:["chase.com"], bankofamerica:["bankofamerica.com"]
@@ -75,21 +113,19 @@
   }
 
   function analyze(text, selectedMode) {
-    const findings=[];
-    if(selectedMode==="url") {
-      const urls=extractUrls(text);
-      if(!urls.length) findings.push(...inspectUrl(text));
-      else urls.forEach(u=>findings.push(...inspectUrl(u)));
+    let findings = [];
+    if (selectedMode === "url") {
+      const urls = extractUrls(text);
+      if (!urls.length) findings.push(...inspectUrl(text));
+      else urls.forEach(u => findings.push(...inspectUrl(u)));
     } else {
-      rules.forEach(rule=>{
-        const isProtectiveAdvice = rule.id==="credential" && /\b(?:never|do not|don't)\s+(?:share|send|provide|give|reply with)\b/i.test(text);
-        if(!isProtectiveAdvice && rule.re.test(text)) findings.push({id:rule.id,points:rule.points,title:rule.title,detail:rule.detail});
-      });
-      extractUrls(text).forEach(u=>findings.push(...inspectUrl(u)));
+      findings.push(...detectMessage(text));
+      extractUrls(text).forEach(u => findings.push(...inspectUrl(u)));
     }
-    const unique=[...new Map(findings.map(f=>[f.id,f])).values()];
-    const score=Math.min(100,unique.reduce((sum,f)=>sum+f.points,0));
-    const level=score>=55?"high":score>=25?"medium":"low";
+    const unique = [...new Map(findings.map(f => [f.id, f])).values()];
+    const score = Math.min(100, unique.reduce((sum, f) => sum + f.points, 0));
+    const critical = unique.some(f => ["credential","personal","remote","irreversible"].includes(f.id));
+    const level = critical || score >= 55 ? "high" : score >= 25 ? "medium" : "low";
     return {score,level,findings:unique};
   }
 
