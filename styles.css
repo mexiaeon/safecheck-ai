@@ -42,3 +42,15 @@
 .action-list{padding-left:20px;margin:6px 0 0}
 .action-list li{font-size:11px;line-height:1.65;color:#d3dfec;padding:4px 0}
 @media(max-width:520px){.report-header{align-items:flex-start}.score{font-size:10px}.result{padding:14px}.score-caveat{line-height:1.55}}
+
+
+/* Mobile report visibility: keep the report clear of Safari's bottom toolbar. */
+#result[hidden]{display:none}
+#result{scroll-margin-top:18px;scroll-margin-bottom:120px;padding-bottom:22px}
+@media(max-width:740px){
+  .inside{padding-bottom:36px}
+  .result{margin-bottom:22px}
+  .result-section{scroll-margin-top:16px}
+  .action-list li{line-height:1.75;padding:6px 0}
+  .engine-note{line-height:1.6}
+}
