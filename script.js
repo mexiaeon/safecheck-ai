@@ -7,8 +7,8 @@
   const result = document.getElementById("result");
   const analyzeButton = document.getElementById("analyze");
   let mode = "message";
-  // Set this to the deployed Worker base URL to enable live checks.
-  const LIVE_CHECK_ENDPOINT = "https://d8768447-safecheck-ai.mexiaeon.workers.dev";
+  const LIVE_CHECK_ENDPOINT = "https://safecheck-ai.mexiaeon.workers.dev";
+  let liveLookupConfigured = false;
 
   const modes = {
     message: ["Paste the suspicious text message", "Remove passwords, account numbers, and private information first.", "Example: Your account will be suspended. Verify your details now..."],
@@ -105,7 +105,7 @@
     } else result.append($("p","","No matching warning patterns were identified. Sophisticated scams may not contain obvious keywords."));
     const next=$("div","next-step");
     next.append($("b","","What to do next"),$("p","","Do not use links or phone numbers in the message. Open the company’s official app or type its known website address yourself. For money already sent, contact your bank or payment provider immediately."));
-    result.append(next,$("p","engine-note","Rule-based analysis only. No live threat-intelligence lookup or website visit was performed. A low score never means safe."));
+    result.append(next,$("p","engine-note","Local pattern analysis only. Live URL reputation checks are not currently enabled. A low score never means safe."));
     result.hidden=false;
     result.scrollIntoView({behavior:"smooth",block:"nearest"});
   }
@@ -118,12 +118,28 @@
   }));
   input.addEventListener("input",()=>{count.textContent=input.value.length+" / 2,000";});
   document.getElementById("year").textContent=new Date().getFullYear();
+
+  async function checkLiveConfiguration() {
+    try {
+      const response = await fetch(LIVE_CHECK_ENDPOINT + "/health", {headers:{"Accept":"application/json"}});
+      if (!response.ok) return;
+      const data = await response.json();
+      liveLookupConfigured = data.ok === true && data.liveLookupConfigured === true;
+    } catch {
+      liveLookupConfigured = false;
+    }
+  }
+  checkLiveConfiguration();
+
   async function runLiveUrlCheck(rawUrl) {
-    if (!LIVE_CHECK_ENDPOINT) return;
-    const status = $("p","engine-note","Checking this URL against Google Web Risk…");
+    if (!liveLookupConfigured) {
+      result.append($("p","engine-note","Live URL reputation checks are not enabled yet. This report is based on local warning patterns only."));
+      return;
+    }
+    const status = $("p","engine-note","Checking this URL against the live threat database…");
     result.append(status);
     try {
-      const response = await fetch(LIVE_CHECK_ENDPOINT.replace(/\/$/,"") + "/check", {
+      const response = await fetch(LIVE_CHECK_ENDPOINT + "/check", {
         method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({url:rawUrl})
       });
       const data = await response.json();
@@ -131,7 +147,7 @@
       status.remove();
       const panel = $("div", data.matched ? "live-result live-match" : "live-result live-clear");
       panel.append($("b","",data.matched ? "Live threat database match" : "No match in the live threat database"));
-      panel.append($("p","",data.matched ? "Google Web Risk currently lists this URL as a known unsafe resource. Do not visit it or enter information." : "Google Web Risk did not find this URL on the threat lists checked. This is not proof that the site is safe."));
+      panel.append($("p","",data.matched ? "The threat database lists this URL as a known unsafe resource. Do not visit it or enter information." : "The threat database did not find this URL on the threat lists checked. This is not proof that the site is safe."));
       result.append(panel);
     } catch (error) {
       status.textContent = "Live lookup unavailable: " + (error.message || "Please try again later.") + ". Local pattern analysis is still shown.";
