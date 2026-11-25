@@ -213,9 +213,9 @@
     mode=button.dataset.mode;
     document.querySelectorAll(".tab").forEach(tab=>tab.classList.toggle("active",tab===button));
     label.textContent=modes[mode][0]; hint.textContent=modes[mode][1]; input.placeholder=modes[mode][2];
-    input.value=""; count.textContent="0 / 2,000"; result.hidden=true; result.replaceChildren();
+    input.value=""; count.textContent="0 / 10,000"; result.hidden=true; result.replaceChildren();
   }));
-  input.addEventListener("input",()=>{count.textContent=input.value.length+" / 2,000";});
+  input.addEventListener("input",()=>{count.textContent=input.value.length+" / 10,000";});
   document.getElementById("year").textContent=new Date().getFullYear();
 
   async function checkLiveConfiguration() {
@@ -252,10 +252,31 @@
       status.textContent = "Live lookup unavailable: " + (error.message || "Please try again later.") + ". Local pattern analysis is still shown.";
     }
   }
+
+  const screenshotInput=document.getElementById("screenshot-file");
+  const ocrStatus=document.getElementById("ocr-status");
+  if(screenshotInput) screenshotInput.addEventListener("change",async()=>{
+    const file=screenshotInput.files&&screenshotInput.files[0]; if(!file)return;
+    if(!["image/png","image/jpeg","image/webp"].includes(file.type)){ocrStatus.textContent="Please choose a PNG, JPG, or WebP image.";screenshotInput.value="";return;}
+    if(file.size>8*1024*1024){ocrStatus.textContent="This image is larger than 8 MB. Choose a smaller screenshot.";screenshotInput.value="";return;}
+    if(!window.Tesseract){ocrStatus.textContent="Screenshot text recognition could not load. You can still paste the email or message text.";return;}
+    ocrStatus.textContent="Reading screenshot text in your browser…";
+    try{
+      const result=await window.Tesseract.recognize(file,"eng+spa",{logger:m=>{if(m.status==="recognizing text")ocrStatus.textContent="Reading screenshot… "+Math.round((m.progress||0)*100)+"%";}});
+      const extracted=(result.data.text||"").trim();
+      if(!extracted){ocrStatus.textContent="No readable text found. Try a clearer screenshot or paste the text.";return;}
+      mode="message";document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode==="message"));
+      label.textContent=modes.message[0];hint.textContent=modes.message[1];input.placeholder=modes.message[2];
+      input.value=extracted.slice(0,10000);count.textContent=input.value.length+" / 10,000";
+      ocrStatus.textContent="Text extracted. Review it, remove private details, then tap Analyze.";
+      result.hidden=true;result.replaceChildren();input.focus();
+    }catch(e){ocrStatus.textContent="Could not read this image. Try a clearer PNG or JPG screenshot, or paste its text instead.";}
+    finally{screenshotInput.value="";}
+  });
   analyzeButton.addEventListener("click",async()=>{
     const value=input.value.trim();
     if(!value){input.focus();return;}
-    if(value.length>2000)return;
+    if(value.length>10000)return;
     renderReport(analyze(value,mode));
     if(mode==="url") await runLiveUrlCheck(value);
     else { const urls=extractUrls(value); if(urls.length) await runLiveUrlCheck(urls[0]); }
