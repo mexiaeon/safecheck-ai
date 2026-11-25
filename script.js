@@ -8,7 +8,7 @@
   const analyzeButton = document.getElementById("analyze");
   let mode = "message";
   // Set this to the deployed Worker base URL to enable live checks.
-  const LIVE_CHECK_ENDPOINT = "";
+  const LIVE_CHECK_ENDPOINT = "https://d8768447-safecheck-ai.mexiaeon.workers.dev";
 
   const modes = {
     message: ["Paste the suspicious text message", "Remove passwords, account numbers, and private information first.", "Example: Your account will be suspended. Verify your details now..."],
